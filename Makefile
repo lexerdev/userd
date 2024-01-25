@@ -1,19 +1,26 @@
-test:
-	for i in test/Dockerfile.*; do docker build -f $${i} -t $${i#test/Dockerfile.} . || exit 1; done
-	for i in test/Dockerfile.*; do docker run -it $${i#test/Dockerfile.} /tmp/userd/test.sh || exit 1; done
+NAME := userd
+
+DEPS := go.mod go.sum main.go distro.go
 
 
-build:
-	CGO_ENABLED=0 GOOS=linux go build -a -ldflags "-s -w" -o userd .
+# I bet there's a better way to do this, but I don't want to spend brain cells on this right now
+all: dist/$(NAME)-linux-amd64 dist/$(NAME)-linux-arm64 dist/$(NAME)-darwin-amd64 dist/$(NAME)-darwin-arm64
 
+dist/$(NAME)-linux-amd64: $(DEPS)
+	GOOS=linux GOARCH=amd64 go build -o $@
 
-auth:
-	test -n "${GITHUB_TOKEN}"
+dist/$(NAME)-linux-arm64: $(DEPS)
+	mkdir -p $(dir $@)
+	GOOS=linux GOARCH=arm64 go build -o $@
 
+dist/$(NAME)-darwin-amd64: $(DEPS)
+	mkdir -p $(dir $@)
+	GOOS=darwin GOARCH=amd64 go build -o $@
 
-publish: auth test build
-	./version.sh alexlance userd ${GITHUB_TOKEN}
-	rm -f userd
+dist/$(NAME)-darwin-arm64: $(DEPS)
+	mkdir -p $(dir $@)
+	GOOS=darwin GOARCH=arm64 go build -o $@
 
-
-.PHONY: test build auth publish
+clean:
+	rm -rf dist
+-o $(dir $@)PHONY: clean
