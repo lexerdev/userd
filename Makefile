@@ -2,6 +2,8 @@ NAME := userd
 
 DEPS := go.mod go.sum main.go distro.go
 
+build:
+	go build -o dist/$(NAME)
 
 # I bet there's a better way to do this, but I don't want to spend brain cells on this right now
 all: dist/$(NAME)-linux-amd64 dist/$(NAME)-linux-arm64 dist/$(NAME)-darwin-amd64 dist/$(NAME)-darwin-arm64
